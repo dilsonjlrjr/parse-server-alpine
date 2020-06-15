@@ -1,2 +1,2 @@
-# parser-platform-container-alpine
+# parse-server-alpine
 Parser Platform container

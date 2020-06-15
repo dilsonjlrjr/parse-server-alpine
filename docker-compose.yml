@@ -1,0 +1,29 @@
+version: "3.5"
+services:
+  mongodb_parse:
+    image: "mongo:latest"
+    ports: 
+      -  27017:27017
+    restart: always
+    environment:
+        - MONGO_INITDB_ROOT_USERNAME=root
+        - MONGO_INITDB_ROOT_PASSWORD=123456
+        - MONGO_INITDB_DATABASE=database_dev
+    volumes:
+        - mongodb_data:/data/db
+  parse_platform:
+    image: "parse-platform-alpine:latest"
+    ports:
+      - "1337:1337"
+    environment:
+      - PARSE_URL=http://localhost:1337/parse
+      - PARSE_MOUNT=/parse
+      - PARSE_PORT_NUMBER=1337
+      - PARSE_APP_ID=myappID
+      - PARSE_MASTER_KEY=mymasterKey
+      - PARSE_DATABASE_URI=mongodb://root:123456@mongodb_parse:27017/database_dev?authSource=admin
+    depends_on:
+      - mongodb_parse
+volumes:
+  mongodb_data:
+    driver: local

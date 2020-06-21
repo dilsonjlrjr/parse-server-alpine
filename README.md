@@ -42,11 +42,14 @@ Parse Server works with the Express web application framework. It can be added t
 
 - [Documentação oficial](#documentação-oficial)
 - [Container Parse Alpine](#container-parse-alpine)
-  - [Estrutura interna](#estrutura-interna)  
-  - [Exemplo de configuração do server.js](#exemplo-de-configuração-do-server.js)
-  - [Exemplo de configuração do main.js](#exemplo-de-configuração-do-main.js)
-  - [Variáveis de ambiente](#variáveis-de-ambiente)
+  - [Estrutura interna](#estrutura-interna)
+  - [Exemplo de configuração do server.js](#exemplo-de-configuração-do-serverjs)
+  - [Exemplo de configuração do main.js](#exemplo-de-configuração-do-mainjs)
+  - [Variáveis de Ambiente](#variáveis-de-ambiente)
 - [Docker Compose](#docker-compose)
+- [Customizando a configuração de inicialização](#customizando-a-configuração-de-inicialização)
+- [Suporte](#suporte)
+
 
 # Documentação oficial
 
@@ -147,4 +150,113 @@ Parse.Cloud.define("hello", function (req, res) {
 
 ## Variáveis de Ambiente
 
+`PARSE_URL`:  Indica qual URL o parse poderá ser acessado.
+ - Valor padrão: http://localhost:1337/parse
+
+
+`PARSE_MOUNT`: Ponto de montagem para acesso a API do parse.
+  - Valor padrão: "/parse"
+
+`PARSE_PORT_NUMBER`: Porta para acesso a plataforma.
+  - Valor padrão: 1337
+
+`PARSE_APP_ID`:  O ID do aplicativo a ser utilizado pela instância do servidor. Você pode usar qualquer sequência arbitrária. Para aplicativos migrados, isso deve corresponder ao seu aplicativo Parse hospedado.
+  - Valor padrão: myappID
+
+Observação: Para mais detalhes sobre o AppId veja a documentação do parse server no [link](https://docs.parseplatform.org/parse-server/guide/#keys).
+
+`PARSE_MASTER_KEY`:  A chave mestra a ser usada para substituir a segurança da ACL. Você pode usar qualquer sequência arbitrária. Mantenha em segredo! Para aplicativos migrados, isso deve corresponder ao seu aplicativo Parse hospedado.
+  - Valor padrão: mymasterKey
+
+Observação: Para mais detalhes sobre o AppId veja a documentação do parse server no [link](https://docs.parseplatform.org/parse-server/guide/#keys).
+
+`PARSE_DATABASE_URI`: URI de acesso ao banco de dados.
+  - Valor padrão: mongodb://mongo.parse:27017/database_dev
+
+Observação: Se você utilizar a instância com suporte ao mongodb, veja (aqui)[https://docs.mongodb.com/manual/reference/connection-string/], como a URI do mongo é formatada.
+Observação 2: Se você utilizar a intância com suporte ao postgresql, veja (aqui)[https://tableplus.com/blog/2018/08/connection-uri-syntax-in-postgresql.html], como a URI do postgres é formatada.
+
+`PARSE_CLOUD_CODE_MAIN`: Arquivo javascript onde estão armazenadas as cloud functions.
+  - Valor padrão: /parse-server/cloud/main.js
+
 # Docker Compose
+
+```yml
+version: "3.5"
+services:
+  mongodb_parse:
+    image: "mongo:latest"
+    ports: 
+      -  27017:27017
+    restart: always
+    environment:
+        - MONGO_INITDB_ROOT_USERNAME=root
+        - MONGO_INITDB_ROOT_PASSWORD=123456
+        - MONGO_INITDB_DATABASE=database_dev
+    volumes:
+        - mongodb_data:/data/db
+  parse_platform:
+    image: "parse-platform-alpine:latest"
+    ports:
+      - "1337:1337"
+    environment:
+      - PARSE_URL=http://localhost:1337/parse
+      - PARSE_MOUNT=/parse
+      - PARSE_PORT_NUMBER=1337
+      - PARSE_APP_ID=myappID
+      - PARSE_MASTER_KEY=mymasterKey
+      - PARSE_DATABASE_URI=mongodb://root:123456@mongodb_parse:27017/database_dev?authSource=admin
+    depends_on:
+      - mongodb_parse
+volumes:
+  mongodb_data:
+    driver: local
+```
+
+# Customizando a configuração de inicialização
+
+A qualquer momento você pode customizar a configuração de inicialização do seu container. Isso permitirá adeque o container a qualquer cenário de uso.
+Recomendações para customização:
+
+1. Obedeça a estrutura hierárquica do container;
+
+O container precisa basicamento de um diretório na sua raiz com o nome parse-server e dentro deste diretório devem ter:
+
+     - /parser-server/cloud/main.js
+     - /parser-server/server.js
+     - /parser-server/package.json
+
+2. Configure o diretório como um volume do tipo bind;
+3. O **package.json** deve obter no mínimo a seguinte estrutura (em desenvolvimento):
+```js
+{
+  "name": "parse-server",
+  "version": "1.0.0",
+  "description": "",
+  "main": "server.js",
+  "dependencies": {
+    "parse-server": "^4.2.0",
+    "express": "^4.17.1"
+  },
+  "devDependencies": {},
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "start": "node server.js"
+  },
+  "author": "",
+  "license": "ISC"
+}
+```
+
+Você está livre para adicionar qualquer novo pacote dentro da plataforma. O container ficará encarregado de instalar o que for necessário.
+
+4. Você pode reconfigurar o arquivo de inicialização do server da forma que você achar mais conveniente. Siga como exemplo o modelo listado nesta documentação clicando (aqui)[#exemplo-de-configuração-do-mainjs].
+5. Mude o entrypoint do container apontando para o script /reinstall_parse.sh.
+
+# Suporte
+
+Em caso de dúvidas entre em contato comigo ou visite a documentação do parse.
+
+Deixo aqui meus contatos:
+- dilsonjlrjr@gmail.com
+- http://linkedin.com/in/dilsonjlrjr

@@ -2,19 +2,22 @@ version: "3.5"
 services:
   mongodb_parse:
     image: "mongo:latest"
-    ports: 
-      -  27017:27017
+    ports:
+      - 27017:27017
     restart: always
     environment:
-        - MONGO_INITDB_ROOT_USERNAME=root
-        - MONGO_INITDB_ROOT_PASSWORD=123456
-        - MONGO_INITDB_DATABASE=database_dev
+      - MONGO_INITDB_ROOT_USERNAME=root
+      - MONGO_INITDB_ROOT_PASSWORD=123456
+      - MONGO_INITDB_DATABASE=database_dev
     volumes:
-        - mongodb_data:/data/db
+      - mongodb_data:/data/db
   parse_platform:
-    image: "parse-platform-alpine:latest"
+    image: "dilsonjlrjr/parse-server-alpine"
     ports:
       - "1337:1337"
+    volumes:
+      - "./parser-server/server.js:/parse-server/server.js:ro"
+      - "./parser-server/package.json:/parse-server/package.json:ro"
     environment:
       - PARSE_URL=http://localhost:1337/parse
       - PARSE_MOUNT=/parse
@@ -22,8 +25,22 @@ services:
       - PARSE_APP_ID=myappID
       - PARSE_MASTER_KEY=mymasterKey
       - PARSE_DATABASE_URI=mongodb://root:123456@mongodb_parse:27017/database_dev?authSource=admin
+      - PARSE_APP_NAME=appName
+      - PARSE_EMAIL_ADAPTER=emailAdapter
+      - PARSE_EMAIL_DOMAIN=emailDomain
+      - PARSE_EMAIL_APIKEY=emailApiKey
     depends_on:
       - mongodb_parse
+  parse-dashboard:
+    image: "bitnami/parse-dashboard:latest"
+    ports:
+      - "4040:4040"
+    environment:
+      - PARSE_APP_ID=myappID
+      - PARSE_MASTER_KEY=mymasterKey
+      - "PARSE_HOST=localhost"
+      - "PARSE_PROTOCOL=http"
+      - "PARSE_PORT_NUMBER=1337"
 volumes:
   mongodb_data:
     driver: local

@@ -26,9 +26,6 @@ services:
       - PARSE_MASTER_KEY=mymasterKey
       - PARSE_DATABASE_URI=mongodb://root:123456@mongodb_parse:27017/database_dev?authSource=admin
       - PARSE_APP_NAME=appName
-      - PARSE_EMAIL_ADAPTER=emailAdapter
-      - PARSE_EMAIL_DOMAIN=emailDomain
-      - PARSE_EMAIL_APIKEY=emailApiKey
     depends_on:
       - mongodb_parse
   parse-dashboard:
@@ -38,9 +35,9 @@ services:
     environment:
       - PARSE_APP_ID=myappID
       - PARSE_MASTER_KEY=mymasterKey
-      - "PARSE_HOST=localhost"
-      - "PARSE_PROTOCOL=http"
-      - "PARSE_PORT_NUMBER=1337"
+      - PARSE_HOST=localhost
+      - PARSE_PROTOCOL=http
+      - PARSE_PORT_NUMBER=1337
 volumes:
   mongodb_data:
     driver: local

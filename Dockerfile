@@ -23,5 +23,6 @@ ENV PARSE_APP_ID=myappID
 ENV PARSE_MASTER_KEY=mymasterKey
 ENV PARSE_DATABASE_URI=mongodb://mongo.parse:27017/database_dev
 ENV PARSE_CLOUD_CODE_MAIN=/parse-server/cloud/main.js
+ENV PARSE_APP_NAME=appName
 
 CMD [ "pm2-runtime", "/parse-server/server.js", "-i max" ]
